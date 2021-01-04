@@ -1,0 +1,202 @@
+1. uniq 명령어
+
+중복된 라인을 제거하는 명령어
+
+# uniq 옵션 파일명
+
+예제 : emp.txt에서 직업만 출력하기
+
+awk '{print $3}' emp.txt
+
+
+예제 : 위 결과에서 abcd 순으로 정렬하기
+
+awk '{print $3}' emp.txt | sort -k 1
+
+저번에는 nrk를 사용했는데
+
+숫자가 아니니 n은 필요없고, 오름차순이라 r도 필요없다.
+
+행은 한 개 밖에 없으니 당연히 1이다.
+
+
+예제 : 위의 결과에서 중복을 제거해서 출력하기
+
+awk '{print $3}' emp.txt | sort -k 1 | uniq
+
+이런 경우 sort만 사용해도 동일하게 출력되긴 한다.
+
+
+###중요###
+
+이렇게 중복제거를 할 때 명심할 점은
+
+uniq를 항상 마지막에 사용해야 한다는 점이다.
+
+uniq는 위아래 데이터가 같은 경우에만 '중복'으로 치기 때문에
+
+만약 SALESMAN이 1행, 10행에 있다면 '중복'이 아니다.
+
+그래서 ABC순으로 먼저 정렬을 하게 한 뒤에, 중복 처리를 해줘야 한다.
+
+
+
+예제 : 직업이 clerk인 사원들의 부서 번호를 출력하는데 중복을 제거해서 출력하기
+
+awk '$3==toupper("clerk") {print $8}' emp.txt | sort -k 1 | uniq
+
+
+
+2. echo 명령어
+
+출력하려 하는 글자를 출력하기 위해 사용하는 명령어
+
+파이썬의 print와 같다.
+
+변수 안의 글자를 출력할 때도 사용
+
+echo ( '출력할 내용' ) -> 그대로 출력
+
+echo ( $변수 ) -> 변수 내용 출력
+
+
+3. vi 편집기 활용
+
+예제 : 직업을 물어보게 하고, 직업을 입력하면 해당 직업의 사원의 이름과 직업을 출력하는 스크립트 만들기
+
+echo -n 'Enter the job name '
+
+read job
+
+grep -i $job emp.txt | awk '{print $2,$3}' 을 한 번에 해야하는데
+
+
+위의 리눅스 명령어 여러 개를 파일로 저장해서 한 번에 수행하는 방법은 다음과 같다.
+
+
+vi 파일 이름.sh -> 입력
+
+vi job2.sh
+
+위를 입력하면, vi 편집기 화면으로 들어가는데,
+
+이 때 알파벳 i를 누르면
+
+아래쪽에 insert 라고 표시된다.
+
+이 때 리눅스 밖에서 3줄의 명령어를 먼저 복사해두고,
+
+shift+insert를 눌러서 붙여넣는다.
+
+복사가 됐으면
+
+esc키를 눌러서 아래쪽에 insert를 사라지게 하고
+
+shift + z 를 두 번 연속으로 누르면 저장된 상태로 빠져나온다.
+
+
+그런 뒤 저장해둔 job2.sh를 실행하려면
+
+sh job2.sh
+
+하면 된다.
+
+
+
+예제 : 이름을 입력받고 해당 사원의 이름과 월급을 출력하기
+
+vi ename.sh
+
+echo -n 'Enter the name '
+
+read temp
+
+awk -v ename=$temp '$2==toupper(ename) {print $2,$6}' emp.txt
+
+sh.ename.sh
+
+코드 설명 :
+
+read ename
+
+awk $2==$ename 같은 코드는 오류가 발생한다.
+
+왜냐하면 $가 각각 의미가 다른데
+
+$2 는 2번째 행, $ename은 ename의 값을 의미하는데
+
+같은 식에 있어서 오류가 발생하는 것 같다.
+
+그래서 temp로 데이터를 입력 받고
+
+awk -v 옵션을 통해
+
+ename 변수에 temp 값을 넣고,
+
+$2==ename 으로 해서 검색하게 했다.
+
+
+
+4. SQL 문의 조인 구현하기
+
+예제 : SCOTT(EMP.TXT)이 근무하는 부서위치(DEPT.TXT)를 출력하기
+
+SQL > select d.loc
+
+from emp e, dept d
+
+where e.deptno=d.deptno and e.ename='SCOTT';
+
+SQL에서의 조인 문을 리눅스에서 구현해보자.
+
+
+예제 : SCOTT의 부서 번호를 출력하기
+
+awk '$2==toupper("scott") {print $8}' emp.txt
+
+하면, SCOTT의 부서 번호인 20만 출력된다.
+
+deptno=`awk '$2==toupper("scott") {print $8}' emp.txt`
+
+이 값을 deptno에 저장.
+
+여기서 awk 문의 양끝에 있는건 숫자 1의 옆에 있는 기호이다.
+
+(싱글 쿼테이션 아님!)
+
+awk -v num=$deptno '$1==num {print $3}' dept.txt
+
+그럼 저번에 했던 것처럼
+
+awk에서 -v 를 하면, num에 $변수값을 넣을 수 있는데,
+
+이를 통해서
+
+dept.txt에서
+
+dept 1열의 값이 20인 행을 찾아서 부서 위치인 $3만 출력한다. 
+
+
+예제 : 이름을 입력받고 그 사원의 부서 위치를 출력하는 스크립트 만들기
+
+vi.find_loc.sh
+
+echo -n "Enter the ename "
+
+read temp
+
+deptno=`awk -v num1=$temp '$2==toupper(num1) {print $8}' emp.txt`
+
+awk -v num=$deptno '$1==num {print $3}' dept.txt
+
+sh.find_loc.sh
+
+read temp
+
+deptno=`awk -v num1=$temp '$2==toupper(num1) {print $8}' emp.txt`
+
+awk -v num=$deptno '$1==num {print $3}' dept.txt
+
+
+
+sh.find_loc.sh
