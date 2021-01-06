@@ -1,0 +1,206 @@
+# IF문
+
+문법은
+
+if [ 조건식 ]; then
+    실행문
+else
+    실행문
+fi
+
+이런 식인데 유의할 점은 조건식이 들어가는 괄호 양쪽에
+
+꼭 한 칸 공백이 있어야 한다.
+
+# 조건식
+
+문자열 비교
+
+1. "문자열1"=="문자열2" : 두 문자열이 같으면 True
+
+2. "문자열1"!="문자열2" : 두 문자열이 같지 않으면 True
+
+숫자열 비교
+
+1. 숫자1 -eq 숫자2: 두 숫자가 같으면 True
+
+2. 숫자1 -ne 숫자2: 두 숫자가 같지 않으면 True
+
+3. 숫자1 -gt 숫자2: 숫자1이 숫자2보다 크면 True
+
+4. 숫자1 -ge 숫자2: 숫자1이 숫자2보다 크거나 같으면 True
+
+5. 숫자1 -lt 숫자2: 숫자1이 숫자2보다 적으면 True
+
+6. 숫자1 -le 숫자2: 숫자1이 숫자2보다 작거나 같으면 True
+
+7. !숫자1 : 숫자1이 거짓이라면 True
+
+
+예제 :
+
+vi if1.sh
+
+if [ 100 -eq 200 ]; then
+    echo "100과 200은 같습니다."
+else
+    echo "100과 200은 같지 않습니다."
+fi
+
+sh if1.sh
+
+
+
+vi if1.sh
+
+if [ $1 -eq $2 ]; then
+    echo "$1과 $2은 같습니다."
+else
+    echo "$1과 $2은 같지 않습니다."
+fi
+
+sh if1.sh 100 200
+
+파라미터 변수를 활용해서 이렇게도 가능하다.
+
+
+
+# 논리 연산자
+
+1. and ---> && 또는 -a
+
+2. or ---> || 또는 -o
+
+3. not ---> !
+
+
+예제 :
+
+if [ $sal -lt 2000 ] && [ $job=="SALESMAN" ]; then
+
+또는
+
+if [ $sal -lt 2000 -a $job=="SALESMAN" ]; then
+
+으로 표현한다.
+
+
+예제 : emp.txt에서 scott의 월급 출력하기
+
+$awk '$2==toupper("scott") {print $6}' emp.txt
+
+예제 : 쉘 스크립트 만들기
+
+vi find_sal.sh
+
+sal=`awk -v name=$1 '$2==toupper(name) {print $6}' emp.txt`
+
+echo "$1의 월급은 $sal 입니다."
+
+sh find_Sal.sh scott
+
+
+예제 : 위의 스크립트와 if 문을 이용해서 스크립트 만들기
+
+사원 이름을 입력받고
+
+월급이 2000 이하인 사원은 월급 인상 대상자,
+
+나머지는 월급 인상 대상자가 아니라고 출력하기
+
+vi find_sal.sh
+
+sal=`awk -v name=$1 '$2==toupper(name) {print $6}' emp.txt`
+
+if [ $sal -lt 2000 ];then
+    echo "$1은 월급 인상 대상자입니다."
+else
+    echo "$1은 월급 인상 대상자가 아닙니다."
+fi
+
+sh find_sal.sh scott
+sh find_sal.sh allen
+
+
+# for 문
+
+문법은
+
+for i in {숫자1..숫자2}
+do
+    실행문
+done
+
+이다.
+
+
+예제 : for문으로 1부터 10까지 출력하기
+
+vi for1.sh
+
+for i in {1..10}
+do
+    echo $i
+done
+
+sh for1.sh
+
+예제 : 구구단 출력하기
+
+vi 9dan.sh
+
+for i in {2..9}
+do
+  for j in {1..9}
+  do
+    let gop=$i*$j
+    echo "$i x $j = $gop"
+  done
+done
+
+sh 9dan.sh
+
+하면 요런 식으로 출력이 된다.
+
+
+vi star.sh
+
+star=""
+
+for i in {1..5}
+do
+  star="$star★"
+  echo $star
+done
+
+sh star.sh
+
+
+예제 : for 문을 이용해서 emp.txt 파일 여러 개 복사하기
+
+vi cp_emp.sh
+
+for i in {1..10}
+do
+    cp emp.txt emp$i.txt
+done
+
+sh cp_emp.sh
+
+ls emp*.txt로 확인해보면 성공적으로 복사가 완료되었다.
+
+
+예제 : emp.txt 내의 사원들의 직업을 for문에 넣어, 직업별로 txt 파일 생성하기
+
+vi generate_job.sh
+
+job=`awk '{print $3}' emp.txt | sort | uniq`
+
+for i in $job
+do
+  grep -i $i emp.txt >> $i.txt
+done
+
+sh genreate_job.sh
+
+ls 와 cat으로 확인해보니 잘 생성되었다.
